@@ -284,6 +284,11 @@ function addon:OptionsTable()
 										type = "toggle",
 										disabled = function() return not self.db.profile.autoLoot end,
 									},
+									autoAwardPopup = {
+										order = 8,
+										name = L["Auto Award POPUP"],
+										desc = L["auto_award_popup_desc"],
+										type = "toggle",									},
 								},
 							},
 							voteOptions = {

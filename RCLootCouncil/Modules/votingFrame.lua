@@ -653,7 +653,7 @@ function RCVotingFrame:GetFrame()
 		for name in pairs(lootTable[session].candidates) do
 			local spec = lootTable[session].candidates[name].response 
 			
-			if spec ~= "NOTHING" and spec ~= "PASS" and spec ~= "ANNOUNCED" then
+			if spec ~= "NOTHING" and spec ~= "PASS" and spec ~= "ANNOUNCED" and spec ~= "WAIT"  and spec ~= "REMOVED" then
 				local playerRank = lootTable[session].candidates[name].rank
 				local playerRoll = lootTable[session].candidates[name].roll
 				
@@ -697,177 +697,27 @@ function RCVotingFrame:GetFrame()
 		--TRIAL PRUEBA----
 		--TRIAL MENDIGANS-
 		------------------
-		
-		--MAIN TOP KEK----
-		--MAIN VETERANO---
-		for rango=1,2 do
-			local spec = 1
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+		alv = true
+		while alv do
+			alv=false
+			--MAIN TOP KEK----
+			--MAIN VETERANO---
+			for rango=1,2 do
+				local spec = 1
+				for dados = 100, 1, -1 do
+					if tenemosGanador then break end
+					if prioridades[spec][rango][dados] then
+						playerGanador = prioridades[spec][rango][dados]
+						tenemosGanador = true
+					end
 				end
 			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		--DUAL TOP KEK----
-		local rango=1
-		local spec=2
-		for dados = 100, 1, -1 do
+			
+			-- Seguimos revisando si no hay ganador
 			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		--MAIN MIEMBRO----
-		local rango=3
-		local spec=1
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-
-		--DUAL VETERANO---
-		local rango=2
-		local spec=2
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-
-
-		--MAIN OSCURO-----
-		local rango=4
-		local spec=1
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-
-
-		--DUAL MIEMBRO----
-		local rango=3
-		local spec=2
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--TRIAL TOP KEK---
-		--TRIAL VETERANO--
-		--TRIAL MIEMBRO---
-		for rango=1,3 do
-			local spec=3
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
-				end
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--MAIN PRUEBA-----
-		local rango=5
-		local spec=1
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--DUAL OSCURO-----
-		local rango=4
-		local spec=2
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--MAIN MENDIGANS--
-		local rango=6
-		local spec=1
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--TRIAL OSCURO----
-		local rango=4
-		local spec=3
-		for dados = 100, 1, -1 do
-			if tenemosGanador then break end
-			if prioridades[spec][rango][dados] then
-				playerGanador = prioridades[spec][rango][dados]
-				tenemosGanador = true
-			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--DUAL PRUEBA-----
-		--DUAL MENDIGANS--
-		for rango=5,6 do
+			
+			--DUAL TOP KEK----
+			local rango=1
 			local spec=2
 			for dados = 100, 1, -1 do
 				if tenemosGanador then break end
@@ -876,15 +726,134 @@ function RCVotingFrame:GetFrame()
 					tenemosGanador = true
 				end
 			end
-		end
-		
-		-- Seguimos revisando si no hay ganador
-		if tenemosGanador then goto hayGanador end
-		
-		
-		--TRIAL PRUEBA----
-		--TRIAL MENDIGANS-
-		for rango=5,6 do
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			--MAIN MIEMBRO----
+			local rango=3
+			local spec=1
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+
+			--DUAL VETERANO---
+			local rango=2
+			local spec=2
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+
+
+			--MAIN OSCURO-----
+			local rango=4
+			local spec=1
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+
+
+			--DUAL MIEMBRO----
+			local rango=3
+			local spec=2
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--TRIAL TOP KEK---
+			--TRIAL VETERANO--
+			--TRIAL MIEMBRO---
+			for rango=1,3 do
+				local spec=3
+				for dados = 100, 1, -1 do
+					if tenemosGanador then break end
+					if prioridades[spec][rango][dados] then
+						playerGanador = prioridades[spec][rango][dados]
+						tenemosGanador = true
+					end
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--MAIN PRUEBA-----
+			local rango=5
+			local spec=1
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--DUAL OSCURO-----
+			local rango=4
+			local spec=2
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--MAIN MENDIGANS--
+			local rango=6
+			local spec=1
+			for dados = 100, 1, -1 do
+				if tenemosGanador then break end
+				if prioridades[spec][rango][dados] then
+					playerGanador = prioridades[spec][rango][dados]
+					tenemosGanador = true
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--TRIAL OSCURO----
+			local rango=4
 			local spec=3
 			for dados = 100, 1, -1 do
 				if tenemosGanador then break end
@@ -893,10 +862,43 @@ function RCVotingFrame:GetFrame()
 					tenemosGanador = true
 				end
 			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--DUAL PRUEBA-----
+			--DUAL MENDIGANS--
+			for rango=5,6 do
+				local spec=2
+				for dados = 100, 1, -1 do
+					if tenemosGanador then break end
+					if prioridades[spec][rango][dados] then
+						playerGanador = prioridades[spec][rango][dados]
+						tenemosGanador = true
+					end
+				end
+			end
+			
+			-- Seguimos revisando si no hay ganador
+			if tenemosGanador then break end
+			
+			
+			--TRIAL PRUEBA----
+			--TRIAL MENDIGANS-
+			for rango=5,6 do
+				local spec=3
+				for dados = 100, 1, -1 do
+					if tenemosGanador then break end
+					if prioridades[spec][rango][dados] then
+						playerGanador = prioridades[spec][rango][dados]
+						tenemosGanador = true
+					end
+				end
+			end
+		
 		end
 		
-		
-		::hayGanador::
 		-- DAMOS EL ITEM A LA PERSONA GANADORA POR PRIO Y DADOS
 		if db.autoAwardPopup then
 			LibDialog:Spawn("RCLOOTCOUNCIL_CONFIRM_AWARD", {

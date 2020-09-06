@@ -82,9 +82,9 @@ function RCLootCouncil:OnInitialize()
 		PASS				= { color = {0.7, 0.7,0.7,1},		sort = 800,		text = L["Pass"],},
 		AUTOPASS			= { color = {0.7,0.7,0.7,1},		sort = 801,		text = L["Autopass"], },
 		DISABLED			= { color = {0.3, 0.35, 0.5},		sort = 802,		text = L["Candidate has disabled RCLootCouncil"], },
-		--[[1]]			  { color = {0,1,0,1},				sort = 1,		text = L["Mainspec/Need"],},
-		--[[2]]			  { color = {1,0.5,0,1},			sort = 2,		text = L["Offspec/Greed"],	},
-		--[[3]]			  { color = {0,0.7,0.7,1},			sort = 3,		text = L["Minor Upgrade"],},
+		--[[1]]			  { color = {0,1,0,1},				sort = 1,		text = L["MAIN"],},
+		--[[2]]			  { color = {1,0.5,0,1},			sort = 2,		text = L["DUAL"],	},
+		--[[3]]			  { color = {0,0.7,0.7,1},			sort = 3,		text = L["TRIAL"],},
 	}
 	self.roleTable = {
 		TANK =		L["Tank"],

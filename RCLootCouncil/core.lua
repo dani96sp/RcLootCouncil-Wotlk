@@ -1236,7 +1236,7 @@ function RCLootCouncil:OnEvent(event, ...)
 
 	elseif event == "RAID_INSTANCE_WELCOME" then
 		self:Debug("Event:", event, ...)
-		-- high server-side latency causes the UnitIsGroupLeader("player") condition to fail if queried quickly (upon entering instance) regardless of state.
+		-- high server-side latency causes the UnitIsPartyLeader("player") condition to fail if queried quickly (upon entering instance) regardless of state.
 		-- NOTE v2.0: Not sure if this is still an issue, but just add a 2 sec timer to the MLCheck call
 		self:ScheduleTimer("OnRaidEnter", 2)
 
@@ -1295,7 +1295,7 @@ end
 function RCLootCouncil:OnRaidEnter(arg)
 	-- NOTE: We shouldn't need to call GetML() as it's most likely called on "LOOT_METHOD_CHANGED"
 	-- There's no ML, and lootmethod ~= ML, but we are the group leader
-	if not self.masterLooter and UnitIsGroupLeader("player") then
+	if not self.masterLooter and UnitIsPartyLeader("player") then
 		-- We don't need to ask the player for usage, so change loot method to master, and make the player ML
 		if db.usage.leader then
 			SetLootMethod("master", self.playerName)

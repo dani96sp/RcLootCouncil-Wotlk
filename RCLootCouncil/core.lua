@@ -174,9 +174,9 @@ function RCLootCouncil:OnInitialize()
 			maxButtons = 10,
 			numButtons = 3,
 			buttons = {
-				{	text = L["Need"],					whisperKey = L["whisperKey_need"], },	-- 1
-				{	text = L["Greed"],				whisperKey = L["whisperKey_greed"],},	-- 2
-				{	text = L["Minor Upgrade"],		whisperKey = L["whisperKey_minor"],},	-- 3
+				{	text = L["Main"],					whisperKey = L["whisperKey_need"], },	-- 1
+				{	text = L["Dual"],				whisperKey = L["whisperKey_greed"],},	-- 2
+				{	text = L["Trial"],		whisperKey = L["whisperKey_minor"],},	-- 3
 			},
 			maxAwardReasons = 10,
 			numAwardReasons = 3,
@@ -1236,7 +1236,7 @@ function RCLootCouncil:OnEvent(event, ...)
 
 	elseif event == "RAID_INSTANCE_WELCOME" then
 		self:Debug("Event:", event, ...)
-		-- high server-side latency causes the UnitIsPartyLeader("player") condition to fail if queried quickly (upon entering instance) regardless of state.
+		-- high server-side latency causes the UnitIsGroupLeader("player") condition to fail if queried quickly (upon entering instance) regardless of state.
 		-- NOTE v2.0: Not sure if this is still an issue, but just add a 2 sec timer to the MLCheck call
 		self:ScheduleTimer("OnRaidEnter", 2)
 

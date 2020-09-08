@@ -653,7 +653,7 @@ function RCVotingFrame:GetFrame()
 		for name in pairs(lootTable[session].candidates) do
 			local spec = lootTable[session].candidates[name].response 
 			
-			if spec ~= "NOTHING" and spec ~= "PASS" and spec ~= "ANNOUNCED" and spec ~= "WAIT"  and spec ~= "REMOVED" then
+			if spec ~= "NOTHING" and spec ~= "PASS" and spec ~= "ANNOUNCED" and spec ~= "WAIT" and spec ~= "REMOVED" and spec ~= "AUTOPASS" then
 				local playerRank = lootTable[session].candidates[name].rank
 				local playerRoll = lootTable[session].candidates[name].roll
 				

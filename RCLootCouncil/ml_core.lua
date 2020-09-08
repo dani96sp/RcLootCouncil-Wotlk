@@ -191,6 +191,7 @@ function RCLootCouncilML:StartSession()
 	-- ensure we are ready
 	if not self.candidates[addon.playerName] or #self.council == 0 then
 		addon:Print("Reactiva el addon desde /rc config.")
+		self:NewMLCheck()
 		return addon:Debug("Data wasn't ready", self.candidates[addon.playerName], #self.council)
 	end
 

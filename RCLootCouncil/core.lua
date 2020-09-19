@@ -157,7 +157,7 @@ function RCLootCouncil:OnInitialize()
 			announceAward = true,
 			awardText = { -- Just max it at 2 channels
 				{ channel = "group",	text = L["&p was awarded with &i for &r!"],},
-				{ channel = "NONE",	text = "",},
+				{ channel = "GUILD",	text = "[&rank][&p][&r]&i",},
 			},
 			announceItems = false,
 			announceText = L["Items under consideration:"],

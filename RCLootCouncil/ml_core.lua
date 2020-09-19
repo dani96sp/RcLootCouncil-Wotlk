@@ -602,9 +602,14 @@ function RCLootCouncilML:AnnounceAward(name, link, text)
 		for k,v in pairs(db.awardText) do
 			if v.channel ~= "NONE" then
 				local message = gsub(v.text, "&p", name)
+				message = gsub(message, "&rank", self.candidates[name].rank)
 				message = gsub(message, "&i", link)
 				message = gsub(message, "&r", text)
-				SendChatMessage(message, addon:GetAnnounceChannel(v.channel))
+				if addon:GetAnnounceChannel(v.channel) ~= "GUILD" then
+					SendChatMessage(message, addon:GetAnnounceChannel(v.channel))
+				else
+					SendChatMessage(message, "channel", GetDefaultLanguage("player"), GetChannelName("hopeautoaward"))
+				end
 			end
 		end
 	end

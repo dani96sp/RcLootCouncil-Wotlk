@@ -89,22 +89,22 @@ RCTokenTable = {
 	
 	
 	-- TIER 9 - ToGC
-	[47557] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --Paladin, Priest, Warlock
-	[47558] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --Warrior, Hunter, Shaman
-	[47559] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, -- Rogue, Death Knight, Mage, 
-	
-	
-	-- TIER 10 - ICC
-	[52025] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Rogue, Death Knight, Mage, Druid
-	[52028] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Rogue, Death Knight, Mage, Druid HC
-
-	
-	
-	[52026] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Warrior, Hunter, Shaman
-	[52029] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Warrior, Hunter, Shaman HC
-	
-	[52027] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Paladin, Priest, Warlock
-	[52030] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Paladin, Priest, Warlock HC
+	--[47557] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --Paladin, Priest, Warlock
+	--[47558] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --Warrior, Hunter, Shaman
+	--[47559] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, -- Rogue, Death Knight, Mage, 
+	--
+	--
+	---- TIER 10 - ICC
+	--[52025] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Rogue, Death Knight, Mage, Druid
+	--[52028] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Rogue, Death Knight, Mage, Druid HC
+	--
+	--
+	--
+	--[52026] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Warrior, Hunter, Shaman
+	--[52029] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Warrior, Hunter, Shaman HC
+	--
+	--[52027] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Paladin, Priest, Warlock
+	--[52030] = {"ChestSlot", "ShoulderSlot", "HandsSlot", "LegsSlot", "HeadSlot" }, --  Paladin, Priest, Warlock HC
 	
 }
 

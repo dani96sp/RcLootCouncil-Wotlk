@@ -612,9 +612,18 @@ function RCVotingFrame:GetFrame()
 		if not active then return end
 		if not addon.isMasterLooter then return end
 
-		-- Calcular quien tiene m·s PRIO y DADOS
+		-- Calcular quien tiene m√°s PRIO y DADOS
 		-- Hacemos roll primero
 		RCVotingFrame:DoRandomRolls(session)
+
+		raidGroups = {}
+
+		for i=1,GetNumRaidMembers() do
+			-- Guardamos el numero de grupo en el que se encuentra
+			name = UnitName("raid"..i)
+			raidGroups[name] = select(3, GetRaidRosterInfo(i))
+		end
+		
 		
 		local prioridades = {}	
 		prioridades[1] = {}
@@ -708,7 +717,9 @@ function RCVotingFrame:GetFrame()
 					if tenemosGanador then break end
 					if prioridades[spec][rango][dados] then
 						playerGanador = prioridades[spec][rango][dados]
-						tenemosGanador = true
+						if raidGroups[playerGanador] < 6 then
+							tenemosGanador = true
+						end
 					end
 				end
 			end
@@ -723,7 +734,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+							tenemosGanador = true
+					end
 				end
 			end
 			
@@ -737,7 +750,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -751,7 +766,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -766,7 +783,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -781,7 +800,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -798,7 +819,9 @@ function RCVotingFrame:GetFrame()
 					if tenemosGanador then break end
 					if prioridades[spec][rango][dados] then
 						playerGanador = prioridades[spec][rango][dados]
-						tenemosGanador = true
+						if raidGroups[playerGanador] < 6 then
+							tenemosGanador = true
+						end
 					end
 				end
 			end
@@ -814,7 +837,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -829,7 +854,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -844,7 +871,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -859,7 +888,9 @@ function RCVotingFrame:GetFrame()
 				if tenemosGanador then break end
 				if prioridades[spec][rango][dados] then
 					playerGanador = prioridades[spec][rango][dados]
-					tenemosGanador = true
+					if raidGroups[playerGanador] < 6 then
+						tenemosGanador = true
+					end
 				end
 			end
 			
@@ -875,7 +906,9 @@ function RCVotingFrame:GetFrame()
 					if tenemosGanador then break end
 					if prioridades[spec][rango][dados] then
 						playerGanador = prioridades[spec][rango][dados]
-						tenemosGanador = true
+						if raidGroups[playerGanador] < 6 then
+							tenemosGanador = true
+						end
 					end
 				end
 			end
@@ -892,7 +925,9 @@ function RCVotingFrame:GetFrame()
 					if tenemosGanador then break end
 					if prioridades[spec][rango][dados] then
 						playerGanador = prioridades[spec][rango][dados]
-						tenemosGanador = true
+						if raidGroups[playerGanador] < 6 then
+							tenemosGanador = true
+						end
 					end
 				end
 			end

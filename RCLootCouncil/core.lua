@@ -1206,7 +1206,7 @@ end
 function RCLootCouncil:GetNumberOfDaysFromNow(oldDate)
 	local d, m, y = strsplit("/", oldDate, 3)
 	local sinceEpoch = time({year = "20"..y, month = m, day = d}) -- convert from string to seconds since epoch
-	local t = date("*t") 
+	local t = date("*t")
 	local tiempoHOY = time({year = t.year, month = t.month, day = t.day})
 	local timediff = tiempoHOY - sinceEpoch
 	if timediff < 0 then timediff = 0 end
@@ -1295,7 +1295,7 @@ end
 function RCLootCouncil:OnRaidEnter(arg)
 	-- NOTE: We shouldn't need to call GetML() as it's most likely called on "LOOT_METHOD_CHANGED"
 	-- There's no ML, and lootmethod ~= ML, but we are the group leader
-	if not self.masterLooter and UnitIsPartyLeader("player") then
+	if not self.masterLooter and (IsRaidLeader() or IsPartyLeader()) then
 		-- We don't need to ask the player for usage, so change loot method to master, and make the player ML
 		if db.usage.leader then
 			SetLootMethod("master", self.playerName)

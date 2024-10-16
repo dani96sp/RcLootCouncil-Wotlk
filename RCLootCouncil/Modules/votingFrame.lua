@@ -297,7 +297,9 @@ function RCVotingFrame:Update()
 	-- update awardString
 	if lootTable[session] and lootTable[session].awarded then
 		self.frame.awardString:Show()
+		self.frame.autoaward:Hide()
 	else
+		self.frame.autoaward:Show()
 		self.frame.awardString:Hide()
 	end
 	-- This only applies to the ML
@@ -312,7 +314,9 @@ function RCVotingFrame:Update()
 	else -- Non-MLs:
 		self.frame.abortBtn:SetText(L["Close"])
 		self.frame.disenchant:Hide()
+		self.frame.autoaward:Hide()
 	end
+
 end
 
 function RCVotingFrame:SwitchSession(s)
@@ -604,11 +608,24 @@ function RCVotingFrame:GetFrame()
 	--b4:SetNormalTexture("Interface\\Icons\\INV_Enchant_Disenchant")
 --	b4:Hide() -- hidden by default
 	f.disenchant = b4
-	
+
+	function print_r(t, indent) -- for debug
+		if not indent then indent = 0 end
+		local formatting = string.rep("  ", indent)
+		for key, value in pairs(t) do
+			if type(value) == "table" then
+				print(formatting .. tostring(key) .. ":")
+				print_r(value, indent + 1)
+			else
+				print(formatting .. tostring(key) .. ": " .. tostring(value))
+			end
+		end
+	end
+
 	-- Autoaward button
 	local b5 = addon:CreateButton(L["Autoaward"], f.content)
 	b5:SetPoint("RIGHT", b4, "LEFT", -10, 0)
-	b5:SetScript("OnClick", function() 
+	b5:SetScript("OnClick", function()
 		if not active then return end
 		if not addon.isMasterLooter then return end
 
@@ -623,333 +640,102 @@ function RCVotingFrame:GetFrame()
 			name = UnitName("raid"..i)
 			raidGroups[name] = select(3, GetRaidRosterInfo(i))
 		end
-		
-		
-		local prioridades = {}	
-		prioridades[1] = {}
-		prioridades[2] = {}
-		prioridades[3] = {}
-		--Hamburguesa
-		--Mano del Rey
-		--Hope Leyendas
-		--Top KEK
-		prioridades[1][1] = {}
-		prioridades[2][1] = {}
-		prioridades[3][1] = {}
-		--Veterano
-		prioridades[1][2] = {}
-		prioridades[2][2] = {}
-		prioridades[3][2] = {}
-		--Miembros
-		prioridades[1][3] = {}
-		prioridades[2][3] = {}
-		prioridades[3][3] = {}
-		--Oscuro
-		prioridades[1][4] = {}
-		prioridades[2][4] = {}
-		prioridades[3][4] = {}
-		--Rango Prueba
-		prioridades[1][5] = {}
-		prioridades[2][5] = {}
-		prioridades[3][5] = {}
-		--Culo Sangrante
-		--Pa Mendigans D1
-		prioridades[1][6] = {}
-		prioridades[2][6] = {}
-		prioridades[3][6] = {}
-				
-		-- Find out who have voted
+
+		local ignoredResponses = {
+			["NOTHING"] = true,
+			["PASS"] = true,
+			["ANNOUNCED"] = true,
+			["WAIT"] = true,
+			["REMOVED"] = true,
+			["AUTOPASS"] = true
+		}
+
+		local prioridades = {}
+		for response = 1, 3 do -- BIS / Minor Upgrade / DUAL
+			prioridades[response] = {}
+			for rankPriority = 1, 2 do
+				prioridades[response][rankPriority] = {}
+			end
+		end
+
+		local rankPriorityTable = {
+			["Gran Jefe Mono"] = 1,
+			["Mano del Rey"] = 1,
+			["raGODbla"] = 1,
+			["Top KEK"] = 1,
+			["Veterano"] = 1,
+			["Miembro"] = 1,
+			["Trial"] = 2,
+			["Culo Sangrante"] = 2,
+			["Makelele"] = 2
+		}
+
+		-- Encontrar quién ha loteado
 		for name in pairs(lootTable[session].candidates) do
-			local spec = lootTable[session].candidates[name].response 
-			
-			if spec ~= "NOTHING" and spec ~= "PASS" and spec ~= "ANNOUNCED" and spec ~= "WAIT" and spec ~= "REMOVED" and spec ~= "AUTOPASS" then
+			local response = lootTable[session].candidates[name].response
+
+			if not ignoredResponses[response] then
 				local playerRank = lootTable[session].candidates[name].rank
 				local playerRoll = lootTable[session].candidates[name].roll
-				
-				if playerRank == "Hamburguesa" or playerRank == "Mano del Rey" or playerRank == "Hope Leyendas" or playerRank == "Top KEK" then
-					prioridades[spec][1][playerRoll] = name
-			    elseif playerRank == "Veterano" then
-					prioridades[spec][2][playerRoll] = name
-			    elseif playerRank == "Miembros" then
-					prioridades[spec][3][playerRoll] = name
-			    elseif playerRank == "Oscuro" then
-					prioridades[spec][4][playerRoll] = name
-			    elseif playerRank == "Rango Prueba" then
-					prioridades[spec][5][playerRoll] = name
-			    else
-					prioridades[spec][6][playerRoll] = name
-			    end
-			    
+				local rankPriority = rankPriorityTable[playerRank]
+
+				if rankPriority then
+					prioridades[response][rankPriority][playerRoll] = name
+				end
 			end
 		end
-		
-		local playerGanador = GetUnitName("player")
-		local tenemosGanador = false
-		-- Miramos la prio
-		------------------
-		--MAIN TOP KEK----
-		--MAIN VETERANO---
-		--DUAL TOP KEK----
-		--MAIN MIEMBRO----
-		--DUAL VETERANO---
-		--MAIN OSCURO-----
-		--DUAL MIEMBRO----
-		--TRIAL TOP KEK---
-		--TRIAL VETERANO--
-		--TRIAL MIEMBRO---
-		--MAIN PRUEBA-----
-		--DUAL OSCURO-----
-		--MAIN MENDIGANS--
-		--TRIAL OSCURO----
-		--DUAL PRUEBA-----
-		--DUAL MENDIGANS--
-		--TRIAL PRUEBA----
-		--TRIAL MENDIGANS-
-		------------------
-		alv = true
-		while alv do
-			alv=false
-			--MAIN TOP KEK----
-			--MAIN VETERANO---
-			for rango=1,2 do
-				local spec = 1
-				for dados = 100, 1, -1 do
-					if tenemosGanador then break end
-					if prioridades[spec][rango][dados] then
-						playerGanador = prioridades[spec][rango][dados]
-						if raidGroups[playerGanador] < 6 then
-							tenemosGanador = true
+
+		local winner
+		for rankPriority = 1,2 do -- Prioridad veterano/miembro > trial
+			if winner then break end
+			for response=1,2 do -- Respuestas BIS > Minor Upgrade
+				if winner then break end
+				for roll = 100, 1, -1 do
+					if winner then break end
+					if prioridades[response][rankPriority][roll] then
+						local player = prioridades[response][rankPriority][roll]
+						if raidGroups[player] < 6 then
+							winner = player
 						end
 					end
 				end
 			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			--DUAL TOP KEK----
-			local rango=1
-			local spec=2
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-							tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			--MAIN MIEMBRO----
-			local rango=3
-			local spec=1
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-
-			--DUAL VETERANO---
-			local rango=2
-			local spec=2
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-
-
-			--MAIN OSCURO-----
-			local rango=4
-			local spec=1
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-
-
-			--DUAL MIEMBRO----
-			local rango=3
-			local spec=2
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--TRIAL TOP KEK---
-			--TRIAL VETERANO--
-			--TRIAL MIEMBRO---
-			for rango=1,3 do
-				local spec=3
-				for dados = 100, 1, -1 do
-					if tenemosGanador then break end
-					if prioridades[spec][rango][dados] then
-						playerGanador = prioridades[spec][rango][dados]
-						if raidGroups[playerGanador] < 6 then
-							tenemosGanador = true
-						end
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--MAIN PRUEBA-----
-			local rango=5
-			local spec=1
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--DUAL OSCURO-----
-			local rango=4
-			local spec=2
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--MAIN MENDIGANS--
-			local rango=6
-			local spec=1
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--TRIAL OSCURO----
-			local rango=4
-			local spec=3
-			for dados = 100, 1, -1 do
-				if tenemosGanador then break end
-				if prioridades[spec][rango][dados] then
-					playerGanador = prioridades[spec][rango][dados]
-					if raidGroups[playerGanador] < 6 then
-						tenemosGanador = true
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--DUAL PRUEBA-----
-			--DUAL MENDIGANS--
-			for rango=5,6 do
-				local spec=2
-				for dados = 100, 1, -1 do
-					if tenemosGanador then break end
-					if prioridades[spec][rango][dados] then
-						playerGanador = prioridades[spec][rango][dados]
-						if raidGroups[playerGanador] < 6 then
-							tenemosGanador = true
-						end
-					end
-				end
-			end
-			
-			-- Seguimos revisando si no hay ganador
-			if tenemosGanador then break end
-			
-			
-			--TRIAL PRUEBA----
-			--TRIAL MENDIGANS-
-			for rango=5,6 do
-				local spec=3
-				for dados = 100, 1, -1 do
-					if tenemosGanador then break end
-					if prioridades[spec][rango][dados] then
-						playerGanador = prioridades[spec][rango][dados]
-						if raidGroups[playerGanador] < 6 then
-							tenemosGanador = true
-						end
-					end
-				end
-			end
-		
 		end
-		
+
+		-- Seguimos revisando si no hay ganador por BIS / Minor Upgrade
+		if not winner then
+			-- Dual
+			for rankPriority = 1,2 do -- Prioridad veterano/miembro > trial
+				if winner then break end
+				local response = 3 -- Respuesta Dual
+				for roll = 100, 1, -1 do
+					if winner then break end
+					if prioridades[response][rankPriority][roll] then
+						local aux = prioridades[response][rankPriority][roll]
+						if raidGroups[aux] < 6 then
+							winner = aux
+						end
+					end
+				end
+			end
+		end
+
 		-- DAMOS EL ITEM A LA PERSONA GANADORA POR PRIO Y DADOS
 		if db.autoAwardPopup then
 			LibDialog:Spawn("RCLOOTCOUNCIL_CONFIRM_AWARD", {
-					session,
-					playerGanador,
-					lootTable[session].candidates[playerGanador].response,
-					nil,
-					lootTable[session].candidates[playerGanador].votes,
-					lootTable[session].candidates[playerGanador].gear1,
-					lootTable[session].candidates[playerGanador].gear2,
+				session,
+				winner,
+				lootTable[session].candidates[winner].response,
+				nil,
+				lootTable[session].candidates[winner].votes,
+				lootTable[session].candidates[winner].gear1,
+				lootTable[session].candidates[winner].gear2,
 			})
 		else
-			local item = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
-			local awarded = RCLootCouncilML:Award(session, playerGanador, lootTable[session].candidates[playerGanador].response, nil)
+			local item2 = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
+			local awarded = RCLootCouncilML:Award(session, winner, lootTable[session].candidates[winner].response, nil)
 			if awarded then -- log it
-				RCLootCouncilML:TrackAndLogLoot(playerGanador, item, lootTable[session].candidates[playerGanador].response, addon.target, lootTable[session].candidates[playerGanador].votes, lootTable[session].candidates[playerGanador].gear1, lootTable[session].candidates[playerGanador].gear2, nil)
+				RCLootCouncilML:TrackAndLogLoot(winner, item2, lootTable[session].candidates[winner].response, addon.target, lootTable[session].candidates[winner].votes, lootTable[session].candidates[winner].gear1, lootTable[session].candidates[winner].gear2, nil)
 			end
 		end
 

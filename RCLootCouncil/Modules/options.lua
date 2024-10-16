@@ -750,8 +750,7 @@ function addon:OptionsTable()
 											header1 = {
 												order = 1,
 												name = L["add_ranks_desc"],
-												type = "header",
-												width = "full",
+												type = "description",
 											},
 											selection = {
 												order = 2,

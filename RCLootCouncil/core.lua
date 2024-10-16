@@ -82,9 +82,9 @@ function RCLootCouncil:OnInitialize()
 		PASS				= { color = {0.7, 0.7,0.7,1},		sort = 800,		text = L["Pass"],},
 		AUTOPASS			= { color = {0.7,0.7,0.7,1},		sort = 801,		text = L["Autopass"], },
 		DISABLED			= { color = {0.3, 0.35, 0.5},		sort = 802,		text = L["Candidate has disabled RCLootCouncil"], },
-		--[[1]]			  { color = {0,1,0,1},				sort = 1,		text = L["MAIN"],},
-		--[[2]]			  { color = {1,0.5,0,1},			sort = 2,		text = L["DUAL"],	},
-		--[[3]]			  { color = {0,0.7,0.7,1},			sort = 3,		text = L["TRIAL"],},
+		--[[1]]			  { color = {0,1,0,1},				sort = 1,		text = L["BIS"],},
+		--[[2]]			  { color = {1,0.5,0,1},			sort = 2,		text = L["Minor Upgrade"],},
+		--[[3]]			  { color = {0,0.7,0.7,1},			sort = 3,		text = L["DUAL"],},
 	}
 	self.roleTable = {
 		TANK =		L["Tank"],
@@ -128,10 +128,10 @@ function RCLootCouncil:OnInitialize()
 			showForML = false,
 			hideVotes = false, -- Hide the # votes until one have voted
 			allowNotes = true,
-			autoAward = false,
+			autoAward = true,
 			autoAwardLowerThreshold = 2,
 			autoAwardUpperThreshold = 3,
-			autoAwardTo = L["None"],
+			autoAwardTo = "Merenween",
 			autoAwardReason = 1,
 			observe = false, -- observe mode on/off
 			silentAutoPass = false, -- Show autopass message
@@ -159,24 +159,24 @@ function RCLootCouncil:OnInitialize()
 				{ channel = "group",	text = L["&p was awarded with &i for &r!"],},
 				{ channel = "GUILD",	text = "[&rank][&p][&r]&i",},
 			},
-			announceItems = false,
+			announceItems = true,
 			announceText = L["Items under consideration:"],
 			announceChannel = "group",
 
 			responses = self.responses,
 
-			enableHistory = false,
+			enableHistory = true,
 			sendHistory = true,
 
-			minRank = -1,
+			minRank = 2,
 			council = {},
 
 			maxButtons = 10,
 			numButtons = 3,
 			buttons = {
-				{	text = L["Main"],					whisperKey = L["whisperKey_need"], },	-- 1
-				{	text = L["Dual"],				whisperKey = L["whisperKey_greed"],},	-- 2
-				{	text = L["Trial"],		whisperKey = L["whisperKey_minor"],},	-- 3
+				{	text = L["Bis"],					whisperKey = L["whisperKey_need"], },	-- 1
+				{	text = L["Upgrade"],					whisperKey = L["whisperKey_minor"],},	-- 2
+				{	text = L["Dual"],					whisperKey = L["whisperKey_greed"],},	-- 3
 			},
 			maxAwardReasons = 10,
 			numAwardReasons = 3,
@@ -196,6 +196,8 @@ function RCLootCouncil:OnInitialize()
 				43954, -- Twilight Drake
 				45038, -- Val'anyr fragment
 				45087, -- Runed Orb
+				49908, -- Primordial Saronite
+				50274, -- Shadowfrost Shard
 			},
 		},
 	} -- defaults end
@@ -250,6 +252,11 @@ function RCLootCouncil:OnInitialize()
 	self.optionsFrame.ml = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil", "Master Looter", "RCLootCouncil", "mlSettings")
 	-- Add logged in message in the log
 	self:DebugLog("Logged In")
+
+	-- Initialize default council members council by default minimum rank on init
+	if not self.checkUpdateTimer then
+		self.checkUpdateTimer = self:ScheduleTimer("AddGuildRanksToCouncil", 2)
+	end
 end
 
 function RCLootCouncil:OnEnable()

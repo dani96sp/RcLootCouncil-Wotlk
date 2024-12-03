@@ -66,13 +66,12 @@ function LootHistory:BuildData()
 	numLootWon = {} -- playerName = #
 	local date
 	-- We want to rebuild lootDB to the "data" format:
-	--local i = 1
 	for name, v in pairs(lootDB) do
 		numLootWon[name] = 0
 		-- Now we actually add the data
-		for i,v in ipairs(v) do
+		for i = 1, #v do
 			numLootWon[name] = numLootWon[name] + 1
-			date = v.date
+			date = v[i].date
 			if not date then -- Unknown date
 				date = L["Unknown date"]
 			end
@@ -81,67 +80,84 @@ function LootHistory:BuildData()
 			end
 			if not data[date][name] then
 				data[date][name] = {}
+				data[date][name].items = {}
 			end
-			if not data[date][name][i] then
-				data[date][name][i] = {}
+			-- Store class at the player level
+			if v[i].class then
+				data[date][name].class = v[i].class
 			end
-			for k, t in pairs(v) do
-				if k == "class" then -- we need the class at a different level
-					data[date][name].class = t
-				elseif k ~= "date" then -- We don't need date
-					data[date][name][i][k] = t
+			-- Store item data sequentially
+			local itemIndex = #data[date][name].items + 1
+			data[date][name].items[itemIndex] = {}
+			for k, t in pairs(v[i]) do
+				if k ~= "class" and k ~= "date" then
+					data[date][name].items[itemIndex][k] = t
 				end
 			end
-			if not data[date][name][i].instance then
-				data[date][name][i].instance = L["Unknown"]
+			if not data[date][name].items[itemIndex].instance then
+				data[date][name].items[itemIndex].instance = L["Unknown"]
 			end
 		end
 	end
-	table.sort(data)
-	-- Now create a blank data table for lib-st to init with
+
+	-- Sort dates in reverse chronological order
+	local dates = {}
+	for date in pairs(data) do
+		tinsert(dates, date)
+	end
+	table.sort(dates, function(a,b)
+		local d1, m1, y1 = strsplit("/", a, 3)
+		local d2, m2, y2 = strsplit("/", b, 3)
+		local t1 = time({year = "20"..y1, month = m1, day = d1})
+		local t2 = time({year = "20"..y2, month = m2, day = d2})
+		return t1 > t2
+	end)
+
+	-- Now create the rows for lib-st
 	self.frame.rows = {}
 	local dateData, nameData, insertedNames = {}, {}, {}
-	local row = 1;
-	for date, v in pairs(data) do
-		for name, x in pairs(v) do
-			for num, i in pairs(x) do
-				if num == "class" then break end
-				self.frame.rows[row] = {
-					date = date,
-					class = x.class,
-					name = name,
-					num = num,
-					response = i.responseID,
-					cols = {
-						{DoCellUpdate = addon.SetCellClassIcon, args = {x.class}},
-						{value = name, color = addon:GetClassColor(x.class)},
-						{DoCellUpdate = self.SetCellGear, args={i.lootWon}},
-						{value = i.lootWon},
-						{DoCellUpdate = self.SetCellResponse, args = {color = i.color, response = i.response, responseID = i.responseID or 0, isAwardReason = i.isAwardReason}}
+	local row = 1
+
+	for _, date in ipairs(dates) do
+		for name, playerData in pairs(data[date]) do
+			if playerData.items then
+				for itemIndex, itemData in ipairs(playerData.items) do
+					self.frame.rows[row] = {
+						date = date,
+						class = playerData.class,
+						name = name,
+						num = itemIndex,
+						response = itemData.responseID,
+						cols = {
+							{DoCellUpdate = addon.SetCellClassIcon, args = {playerData.class}},
+							{value = name, color = addon:GetClassColor(playerData.class)},
+							{DoCellUpdate = self.SetCellGear, args = {itemData.lootWon}},
+							{value = itemData.lootWon},
+							{DoCellUpdate = self.SetCellResponse, args = {
+								color = itemData.color,
+								response = itemData.response,
+								responseID = itemData.responseID or 0,
+								isAwardReason = itemData.isAwardReason
+							}}
+						}
 					}
-				}
-				row = row + 1
-			end
-			if not tContains(insertedNames, name) then -- we only want each name added once
-				tinsert(nameData,
-					{
-						{DoCellUpdate = addon.SetCellClassIcon, args = {x.class}},
-						{value = name, color = addon:GetClassColor(x.class), name = name}
-					}
-				)
-				tinsert(insertedNames, name)
-			elseif x.class then -- it already exists, but we might need to add the class which we now have
-				for i in pairs(nameData) do
-					if nameData[i][2].name == name then
-						nameData[i][1].args = {x.class}
-					end
+					row = row + 1
 				end
+			end
+
+			if not tContains(insertedNames, name) then
+				tinsert(nameData, {
+					{DoCellUpdate = addon.SetCellClassIcon, args = {playerData.class}},
+					{value = name, color = addon:GetClassColor(playerData.class), name = name}
+				})
+				tinsert(insertedNames, name)
 			end
 		end
 		tinsert(dateData, {date})
 	end
+
 	self.frame.st:SetData(self.frame.rows)
-	self.frame.date:SetData(dateData, true) -- True for minimal data	format
+	self.frame.date:SetData(dateData, true)
 	self.frame.name:SetData(nameData, true)
 end
 
@@ -217,29 +233,30 @@ function LootHistory.ResponseSort(table, rowa, rowb, sortbycol)
 	local column = table.cols[sortbycol]
 	rowa, rowb = table:GetRow(rowa), table:GetRow(rowb);
 	local a,b
-	local aID, bID = data[rowa.date][rowa.name][rowa.num].responseID, data[rowb.date][rowb.name][rowb.num].responseID
-	local awardReason = true
 
-	-- NOTE: I'm pretty sure it can only be an awardReason when responseID is nil or 0
+	-- Acceder a los datos de manera segura con la nueva estructura
+	local dataA = data[rowa.date] and data[rowa.date][rowa.name] and data[rowa.date][rowa.name].items and data[rowa.date][rowa.name].items[rowa.num]
+	local dataB = data[rowb.date] and data[rowb.date][rowb.name] and data[rowb.date][rowb.name].items and data[rowb.date][rowb.name].items[rowb.num]
+
+	local aID = dataA and dataA.responseID
+	local bID = dataB and dataB.responseID
 
 	if aID and aID ~= 0 then
-		if data[rowa.date][rowa.name][rowa.num].isAwardReason then
-			a = db.awardReasons[aID].sort
+		if dataA.isAwardReason then
+			a = db.awardReasons[aID] and db.awardReasons[aID].sort or 500
 		else
 			a = addon:GetResponseSort(aID)
 		end
 	else
-		-- 500 will be below award reasons and just above status texts
 		a = 500
 	end
 
 	if bID and bID ~= 0 then
-		if data[rowb.date][rowb.name][rowb.num].isAwardReason then
-			b = db.awardReasons[bID].sort
+		if dataB.isAwardReason then
+			b = db.awardReasons[bID] and db.awardReasons[bID].sort or 500
 		else
 			b = addon:GetResponseSort(bID)
 		end
-
 	else
 		b = 500
 	end
@@ -391,32 +408,49 @@ end
 ---------------------------------------------------
 function LootHistory.FilterMenu(menu, level)
 	local info = Lib_UIDropDownMenu_CreateInfo()
-		if level == 1 then -- Redundant
-			-- Build the data table:
-			local data = {["STATUS"] = true, ["PASS"] = true, ["AUTOPASS"] = true}
-			for i = 1, addon.mldb.numButtons or db.numButtons do
-				data[i] = i
+	if level == 1 then -- Redundant
+		-- Build the data table:
+		local data = {["STATUS"] = true, ["PASS"] = true, ["AUTOPASS"] = true}
+		for i = 1, addon.mldb.numButtons or db.numButtons do
+			data[i] = i
+		end
+		if not db.modules["RCLootHistory"].filters then -- Create the db entry
+			addon:DebugLog("Created LootHistory filters")
+			db.modules["RCLootHistory"].filters = {}
+		end
+		for k in pairs(data) do -- Update the db entry to make sure we have all buttons in it
+			if type(db.modules["RCLootHistory"].filters[k]) ~= "boolean" then
+				addon:Debug("Didn't contain "..k)
+				db.modules["RCLootHistory"].filters[k] = true -- Default as true
 			end
-			if not db.modules["RCLootHistory"].filters then -- Create the db entry
-				addon:DebugLog("Created LootHistory filters")
-				db.modules["RCLootHistory"].filters = {}
-			end
-			for k in pairs(data) do -- Update the db entry to make sure we have all buttons in it
-				if type(db.modules["RCLootHistory"].filters[k]) ~= "boolean" then
-					addon:Debug("Didn't contain "..k)
-					db.modules["RCLootHistory"].filters[k] = true -- Default as true
-				end
-			end
-			info.text = L["Filter"]
-			info.isTitle = true
-			info.notCheckable = true
-			info.disabled = true
-			Lib_UIDropDownMenu_AddButton(info, level)
-			info = Lib_UIDropDownMenu_CreateInfo()
+		end
+		info.text = L["Filter"]
+		info.isTitle = true
+		info.notCheckable = true
+		info.disabled = true
+		Lib_UIDropDownMenu_AddButton(info, level)
+		info = Lib_UIDropDownMenu_CreateInfo()
 
-			for k in ipairs(data) do -- Make sure normal responses are on top
-				info.text = addon:GetResponseText(k)
-				info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
+		for k in ipairs(data) do -- Make sure normal responses are on top
+			info.text = addon:GetResponseText(k)
+			info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
+			info.func = function()
+				addon:Debug("Update Filter")
+				db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
+				LootHistory:Update()
+			end
+			info.checked = db.modules["RCLootHistory"].filters[k]
+			Lib_UIDropDownMenu_AddButton(info, level)
+		end
+		for k in pairs(data) do -- A bit redundency, but it makes sure these "specials" comes last
+			if type(k) == "string" then
+				if k == "STATUS" then
+					info.text = L["Status texts"]
+					info.colorCode = "|cffde34e2" -- purpleish
+				else
+					info.text = addon:GetResponseText(k)
+					info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
+				end
 				info.func = function()
 					addon:Debug("Update Filter")
 					db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
@@ -425,23 +459,6 @@ function LootHistory.FilterMenu(menu, level)
 				info.checked = db.modules["RCLootHistory"].filters[k]
 				Lib_UIDropDownMenu_AddButton(info, level)
 			end
-			for k in pairs(data) do -- A bit redundency, but it makes sure these "specials" comes last
-				if type(k) == "string" then
-					if k == "STATUS" then
-						info.text = L["Status texts"]
-						info.colorCode = "|cffde34e2" -- purpleish
-					else
-						info.text = addon:GetResponseText(k)
-						info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
-					end
-					info.func = function()
-						addon:Debug("Update Filter")
-						db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
-						LootHistory:Update()
-					end
-					info.checked = db.modules["RCLootHistory"].filters[k]
-					Lib_UIDropDownMenu_AddButton(info, level)
-				end
-			end
 		end
 	end
+end

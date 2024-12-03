@@ -347,6 +347,7 @@ function RCLootCouncil:OnEnable()
 					if #db.council == 0 then -- if there's no council
 						self:Print(L["You haven't set a council! You can edit your council by typing '/rc council'"])
 					end
+					JoinChannelByName("hopeautoaward")
 					self:CallModule("masterlooter")
 					self:GetActiveModule("masterlooter"):NewML(self.masterLooter)
 				end,

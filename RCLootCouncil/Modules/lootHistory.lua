@@ -6,6 +6,7 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local LootHistory = addon:NewModule("RCLootHistory")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
+local AceGUI = LibStub("AceGUI-3.0")
 local lootDB, scrollCols, data, db, numLootWon;
 --[[ data structure:
 data[date][playerName] = {
@@ -31,6 +32,29 @@ function LootHistory:OnInitialize()
 	Lib_UIDropDownMenu_Initialize(filterMenu, self.FilterMenu, "MENU")
 	--MoreInfo
 	self.moreInfo = CreateFrame( "GameTooltip", "RCLootHistoryMoreInfo", nil, "GameTooltipTemplate" )
+
+	-- Definir el popup para exportación CSV
+	if not StaticPopupDialogs["RCLOOTCOUNCIL_EXPORT_CSV"] then
+		StaticPopupDialogs["RCLOOTCOUNCIL_EXPORT_CSV"] = {
+			text = "Datos CSV para exportar:",
+			button1 = "Cerrar",
+			hasEditBox = true,
+			editBoxWidth = 350,
+			maxLetters = 0,
+			OnShow = function(self, data)
+				self.editBox:SetText(data)
+				self.editBox:HighlightText()
+				self.editBox:SetFocus()
+			end,
+			EditBoxOnEscapePressed = function(self)
+				self:GetParent():Hide()
+			end,
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = true,
+			preferredIndex = 3,
+		}
+	end
 end
 
 function LootHistory:OnEnable()
@@ -361,6 +385,14 @@ function LootHistory:GetFrame()
 	f.filter = b3
 	Lib_UIDropDownMenu_Initialize(b3, self.FilterMenu)
 
+	-- Export CSV button
+	local b4 = addon:CreateButton("Exportar CSV", f.content)
+	b4:SetPoint("RIGHT", b3, "LEFT", -10, 0)
+	b4:SetScript("OnClick", function() self:ExportToCSV() end)
+	b4:SetScript("OnEnter", function() addon:CreateTooltip("Exportar el historial filtrado a CSV") end)
+	b4:SetScript("OnLeave", addon.HideTooltip)
+	f.exportCSV = b4
+
 	-- Set a proper width
 	f:SetWidth(st.frame:GetWidth() + 20)
 	return f;
@@ -401,56 +433,84 @@ function LootHistory:UpdateMoreInfo(rowFrame, cellFrame, dat, cols, row, realrow
 	tip:SetAnchorType("ANCHOR_RIGHT", 0, -tip:GetHeight())
 end
 
+function LootHistory:ExportToCSV()
+	-- Crear el encabezado del CSV
+	local csv = "character,date,itemID,itemName,note\n"
 
+	-- Obtener las filas filtradas actuales
+	local rows = {}
+	for i = 1, #self.frame.rows do
+		local row = self.frame.rows[i]
+		if self.FilterFunc(self.frame.st, row) then
+			tinsert(rows, row)
+		end
+	end
+
+	-- Procesar cada fila
+	for _, row in ipairs(rows) do
+		local itemData = data[row.date][row.name].items[row.num]
+
+		-- Extraer el itemID del link
+		local itemID = itemData.lootWon:match("item:(%d+)")
+
+		-- Extraer el nombre del item (eliminar los códigos de color y el resto del link)
+		local itemName = itemData.lootWon:match("|h%[(.-)%]|h")
+
+		-- Formatear la fecha de dd/mm/yy a yyyy-mm-dd
+		local day, month, year = row.date:match("(%d+)/(%d+)/(%d+)")
+		local formattedDate = string.format("20%s-%s-%s", year, month, day)
+
+		-- Determinar la nota (OS si responseID es 3, vacío en otro caso)
+		local note = itemData.responseID == 3 and "OS" or ""
+
+		-- Escapar comillas en el nombre del item
+		itemName = itemName:gsub('"', '""')
+
+		-- Añadir la línea al CSV
+		csv = csv .. string.format('%s,%s,%s,"%s",%s\n',
+			row.name,
+			formattedDate,
+			itemID,
+			itemName,
+			note
+		)
+	end
+
+	-- Mostrar el popup con los datos CSV
+	StaticPopup_Show("RCLOOTCOUNCIL_EXPORT_CSV", nil, nil, csv)
+end
 
 ---------------------------------------------------
 -- Dropdowns
 ---------------------------------------------------
 function LootHistory.FilterMenu(menu, level)
 	local info = Lib_UIDropDownMenu_CreateInfo()
-	if level == 1 then -- Redundant
-		-- Build the data table:
-		local data = {["STATUS"] = true, ["PASS"] = true, ["AUTOPASS"] = true}
-		for i = 1, addon.mldb.numButtons or db.numButtons do
-			data[i] = i
-		end
-		if not db.modules["RCLootHistory"].filters then -- Create the db entry
-			addon:DebugLog("Created LootHistory filters")
-			db.modules["RCLootHistory"].filters = {}
-		end
-		for k in pairs(data) do -- Update the db entry to make sure we have all buttons in it
-			if type(db.modules["RCLootHistory"].filters[k]) ~= "boolean" then
-				addon:Debug("Didn't contain "..k)
-				db.modules["RCLootHistory"].filters[k] = true -- Default as true
+		if level == 1 then -- Redundant
+			-- Build the data table:
+			local data = {["STATUS"] = true, ["PASS"] = true, ["AUTOPASS"] = true}
+			for i = 1, addon.mldb.numButtons or db.numButtons do
+				data[i] = i
 			end
-		end
-		info.text = L["Filter"]
-		info.isTitle = true
-		info.notCheckable = true
-		info.disabled = true
-		Lib_UIDropDownMenu_AddButton(info, level)
-		info = Lib_UIDropDownMenu_CreateInfo()
-
-		for k in ipairs(data) do -- Make sure normal responses are on top
-			info.text = addon:GetResponseText(k)
-			info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
-			info.func = function()
-				addon:Debug("Update Filter")
-				db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
-				LootHistory:Update()
+			if not db.modules["RCLootHistory"].filters then -- Create the db entry
+				addon:DebugLog("Created LootHistory filters")
+				db.modules["RCLootHistory"].filters = {}
 			end
-			info.checked = db.modules["RCLootHistory"].filters[k]
-			Lib_UIDropDownMenu_AddButton(info, level)
-		end
-		for k in pairs(data) do -- A bit redundency, but it makes sure these "specials" comes last
-			if type(k) == "string" then
-				if k == "STATUS" then
-					info.text = L["Status texts"]
-					info.colorCode = "|cffde34e2" -- purpleish
-				else
-					info.text = addon:GetResponseText(k)
-					info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
+			for k in pairs(data) do -- Update the db entry to make sure we have all buttons in it
+				if type(db.modules["RCLootHistory"].filters[k]) ~= "boolean" then
+					addon:Debug("Didn't contain "..k)
+					db.modules["RCLootHistory"].filters[k] = true -- Default as true
 				end
+			end
+			info.text = L["Filter"]
+			info.isTitle = true
+			info.notCheckable = true
+			info.disabled = true
+			Lib_UIDropDownMenu_AddButton(info, level)
+			info = Lib_UIDropDownMenu_CreateInfo()
+
+			for k in ipairs(data) do -- Make sure normal responses are on top
+				info.text = addon:GetResponseText(k)
+				info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
 				info.func = function()
 					addon:Debug("Update Filter")
 					db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
@@ -459,6 +519,23 @@ function LootHistory.FilterMenu(menu, level)
 				info.checked = db.modules["RCLootHistory"].filters[k]
 				Lib_UIDropDownMenu_AddButton(info, level)
 			end
+			for k in pairs(data) do -- A bit redundency, but it makes sure these "specials" comes last
+				if type(k) == "string" then
+					if k == "STATUS" then
+						info.text = L["Status texts"]
+						info.colorCode = "|cffde34e2" -- purpleish
+					else
+						info.text = addon:GetResponseText(k)
+						info.colorCode = "|cff"..addon:RGBToHex(addon:GetResponseColor(k))
+					end
+					info.func = function()
+						addon:Debug("Update Filter")
+						db.modules["RCLootHistory"].filters[k] = not db.modules["RCLootHistory"].filters[k]
+						LootHistory:Update()
+					end
+					info.checked = db.modules["RCLootHistory"].filters[k]
+					Lib_UIDropDownMenu_AddButton(info, level)
+				end
+			end
 		end
 	end
-end
